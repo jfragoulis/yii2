@@ -353,6 +353,26 @@ class ComponentTest extends TestCase
         $this->assertFalse($this->component->hasEventHandlers('foo'));
         $this->assertFalse($this->component->off('foo'));
     }
+
+    public function testAttachMethod() {
+        $component = new NewComponent;
+        
+        $component->attachMethod('setContentToTest', function(){
+            $this->content = 'Test';
+        });
+
+        $component->attachMethod('isContentSetToTest', function(){
+            return $this->content === 'Test';
+        });
+
+        $this->assertFalse(method_exists($component, 'setContentToTest'));
+        $this->assertTrue(is_callable([$component, 'setContentToTest']));
+        $component->setContentToTest();
+        
+        $this->assertFalse(method_exists($component, 'isContentSetToTest'));
+        $this->assertTrue(is_callable([$component, 'isContentSetToTest']));
+        $this->assertTrue($component->isContentSetToTest());
+    }
 }
 
 class NewComponent extends Component

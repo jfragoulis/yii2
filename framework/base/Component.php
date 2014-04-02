@@ -105,6 +105,10 @@ class Component extends Object
      * @var Behavior[] the attached behaviors (behavior name => behavior)
      */
     private $_behaviors;
+    /**
+     * @var array the dynamically added methods (method name => closure)
+     */
+    private $_methods = [];
 
     /**
      * Returns the value of a component property.
@@ -275,6 +279,10 @@ class Component extends Object
      */
     public function __call($name, $params)
     {
+        if(isset($this->_methods[$name])) {
+            return call_user_func_array($this->_methods[$name], $params);
+        }
+
         $this->ensureBehaviors();
         foreach ($this->_behaviors as $object) {
             if ($object->hasMethod($name)) {
@@ -669,5 +677,16 @@ class Component extends Object
         $behavior->attach($this);
 
         return $this->_behaviors[$name] = $behavior;
+    }
+
+    /**
+     * Attaches a method to this component.
+     * @param string $name the name of the method.
+     * @param Closure $closure the closure to be attached.
+     * @return Closure the attached closure.
+     */
+    public function attachMethod($name, $closure) 
+    {
+        return $this->_methods[$name] = \Closure::bind($closure, $this, get_class());
     }
 }
